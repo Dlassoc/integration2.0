@@ -5,60 +5,61 @@ import SendIcon from "./SendIcon";
 import ExitIcon from "./ExitIcon";
 import useMessage from "../../../hooks/useMessages";
 
+// Definición de las palabras clave para identificar el tipo de pregunta
 const options = {
   password: [
-    "cambiar",
-    "contraseña",
-    "clave",
-    "ingresar",
-    "problema",
-    "quiero",
+    "change",
+    "password",
+    "key",
+    "login",
+    "issue",
+    "want",
   ],
   pqr: [
-    "problema",
+    "issue",
     "pqr",
-    "cambiar",
+    "change",
     "no",
-    "funciona",
+    "not working",
     "error",
-    "quiero",
-    "queja",
-    "insatisfecho",
+    "want",
+    "complaint",
+    "unsatisfied",
   ],
-  tournament: ["torneo", "problema", "ingresar", "persona", "participante"],
+  tournament: ["tournament", "issue", "login", "person", "participant"],
 };
 
+// Función para determinar el tipo de pregunta en función de las palabras clave
 const giveAnAnswer = (message) => {
   let answers = message.toLowerCase().split(" ");
 
   let bestOne = "";
-  let contador = 0;
-  for (let clave in options) {
-    let contadorTemp = 0;
+  let counter = 0;
+  for (let key in options) {
+    let tempCounter = 0;
     for (let answer of answers) {
-      if (options[clave].includes(answer)) {
-        contadorTemp++;
+      if (options[key].includes(answer)) {
+        tempCounter++;
       }
     }
-    if (contadorTemp > contador) {
-      contador = contadorTemp;
-      bestOne = clave;
+    if (tempCounter > counter) {
+      counter = tempCounter;
+      bestOne = key;
     }
   }
 
-  if (contador < 3) {
-    if (answers.includes("contraseña") || answers.includes("clave"))
+  if (counter < 3) {
+    if (answers.includes("password") || answers.includes("key"))
       return "password";
     if (
       answers.includes("pqr") ||
-      answers.includes("queja") ||
-      answers.includes("insatisfecho") ||
-      answers.includes("insatisfecha")
+      answers.includes("complaint") ||
+      answers.includes("unsatisfied")
     )
       return "pqr";
-    if (answers.includes("torneo")) return "tournament";
+    if (answers.includes("tournament")) return "tournament";
     if (answers.length === 1) {
-      if (answers[0] === "si") return "yes";
+      if (answers[0] === "yes") return "yes";
       if (answers[0] === "no") return "no";
       return "no_sense";
     }
@@ -67,21 +68,24 @@ const giveAnAnswer = (message) => {
   return bestOne;
 };
 
+// Respuestas posibles en función del tipo de pregunta
 const PROCESS = {
   password: ["¿Quieres cambiar tu contraseña?", "Ingresa tu nueva contraseña"],
-  pqr: ["¿Quieres hacer una PQR para presentar tu problema?", "Ingresa la pqr"],
-  tournament: ["Hacer torneo", "Empezar torneo"],
+  pqr: ["¿Quieres hacer una PQR para presentar tu problema?", "Ingresa la PQR"],
+  tournament: ["Iniciar un torneo", "Comenzar el torneo"],
   no_sense: ["No entiendo"],
-  no: ["Esta bien, estoy aqui para lo que necesites"],
-  si: ["Dime"],
+  no: ["Está bien, estoy aquí para ayudarte con lo que necesites"],
+  yes: ["Dime"],
 };
 
+// Funciones de manejo para procesos específicos
 const HANDLE_PROCESS = {
-  pqr: (message) => alert("Realizaste pqr " + message),
-  password: (message) => alert("Nueva contraseña " + message),
-  tournament: (message) => alert("Torneo " + message),
+  pqr: (message) => alert("Has presentado una PQR: " + message),
+  password: (message) => alert("Nueva contraseña: " + message),
+  tournament: (message) => alert("Torneo: " + message),
 };
 
+// Función para controlar el desplazamiento automático de los mensajes
 function controlMessages() {
   const chat = document.getElementById("chat");
   if (!chat) return;
@@ -94,6 +98,7 @@ function controlMessages() {
   }, 1000);
 }
 
+// Función para determinar la respuesta del bot y manejar los procesos
 async function checkQuestion(
   message,
   setAnswer,
@@ -111,7 +116,7 @@ async function checkQuestion(
     HANDLE_PROCESS[currentProcess](message);
     setIsAnswering(false);
     setCurrentProcess(undefined);
-    messageObject.text = "Hay algo mas en lo que pueda ayudarte?";
+    messageObject.text = "¿Hay algo más en lo que pueda ayudarte?";
     return setAnswer((lastMessages) => [...lastMessages, messageObject]);
   }
 
@@ -122,11 +127,11 @@ async function checkQuestion(
   messageObject.text = process[0];
 
   if (currentProcess) {
-    if (process == "yes") {
+    if (process === "yes") {
       messageObject.text = PROCESS[currentProcess][1];
       setIsAnswering(true);
     } else {
-      messageObject.text = "Entonces cuentame como puedo ayudarte";
+      messageObject.text = "Entonces, cuéntame cómo puedo ayudarte";
       setCurrentProcess(undefined);
     }
     return setAnswer((lastMessages) => [...lastMessages, messageObject]);
@@ -150,7 +155,7 @@ const Chat = () => {
   useEffect(() => {
     controlMessages();
     const lastMessage = messages[messages.length - 1];
-    if (messages.length == 0 || lastMessage?.type !== "user") return () => {};
+    if (messages.length === 0 || lastMessage?.type !== "user") return () => {};
     checkQuestion(
       lastMessage?.text,
       setMessages,
@@ -212,4 +217,5 @@ const Chat = () => {
     </article>
   );
 };
+
 export default Chat;
